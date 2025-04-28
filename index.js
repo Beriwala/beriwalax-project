@@ -1,34 +1,83 @@
+// ----------------------------
+// Required Packages Install करें
+// ----------------------------
+// Terminal में चलाएं:
+// npm install express dotenv axios
+// ----------------------------
+
+require('dotenv').config();
+const express = require('express');
 const axios = require('axios');
 
-// Export the function properly so that Vercel knows how to handle it
-module.exports = async function generateVideo(req, res) {
-    try {
-        // Check if the video_id is provided in the request body
-        const { video_id } = req.body;  // Destructure video_id from request body
+const app = express();
+const port = process.env.PORT || 3000;
 
-        // If video_id is not provided, return an error
-        if (!video_id) {
-            return res.status(400).json({ error: "video_id is required" });
-        }
+// ----------------------------
+// Middleware for Security
+// ----------------------------
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-        // Framepack API URL
-        const apiUrl = 'https://api.framepack.ai/v1/generate';
+// ----------------------------
+// Environment Variables
+// ----------------------------
+const FRAMEPACK_API_KEY = process.env.FRAMEPACK_API_KEY;
+const API_BASE_URL = 'https://api.framepack.com/v1'; // Replace with actual API URL
 
-        // API Request headers with your API key
-        const headers = {
-            Authorization: Bearer 43b8871e-8fd2-48bc-8794-50b9c5c7c7d7:a6285f7804a0a0b5e609c75b79605af8, // Your Framepack API key
-        };
+// ----------------------------
+// Secure API Call Function
+// ----------------------------
+async function makeSecureApiCall(endpoint, data) {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/${endpoint}`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${FRAMEPACK_API_KEY}`
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('API Error:', error.response?.data || error.message);
+    throw new Error('Request failed');
+  }
+}
 
-        // Send the request to Framepack API with video_id
-        const response = await axios.post(apiUrl, {
-            video_id: video_id,  // Pass the video_id from the request body
-        }, { headers });
-
-        // Return the response to the client
-        res.status(200).json(response.data);  // Success response
-    } catch (error) {
-        // If any error occurs, log it and return the error message
-        console.error("Error generating video:", error.message);
-        res.status(500).json({ error: "Error generating video", message: error.message });
+// ----------------------------
+// Sample Route (आपके use case के अनुसार बदलें)
+// ----------------------------
+app.post('/process-image', async (req, res) => {
+  try {
+    const userData = req.body;
+    
+    // Input Validation
+    if (!userData.imageUrl) {
+      return res.status(400).json({ error: 'Image URL required' });
     }
-};
+
+    const apiResponse = await makeSecureApiCall('process', {
+      image: userData.imageUrl,
+      settings: {
+        quality: 'high',
+        format: 'jpeg'
+      }
+    });
+
+    res.json({
+      success: true,
+      result: apiResponse
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error'
+    });
+  }
+});
+
+// ----------------------------
+// Server Start
+// ----------------------------
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
