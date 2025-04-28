@@ -1,40 +1,34 @@
-const express = require('express');
 const axios = require('axios');
-const app = express();
 
-// Parse incoming JSON requests
-app.use(express.json());
+// Export the function properly so that Vercel knows how to handle it
+module.exports = async function generateVideo(req, res) {
+    try {
+        // Check if the video_id is provided in the request body
+        const { video_id } = req.body;  // Destructure video_id from request body
 
-// API handler function
-async function generateVideo(req, res) {
-  try {
-    const { video_id } = req.body; // Make sure req.body is parsed
+        // If video_id is not provided, return an error
+        if (!video_id) {
+            return res.status(400).json({ error: "video_id is required" });
+        }
 
-    // Check if video_id exists
-    if (!video_id) {
-      return res.status(400).json({ error: 'Missing video_id in request body' });
+        // Framepack API URL
+        const apiUrl = 'https://api.framepack.ai/v1/generate';
+
+        // API Request headers with your API key
+        const headers = {
+            Authorization: Bearer 43b8871e-8fd2-48bc-8794-50b9c5c7c7d7:a6285f7804a0a0b5e609c75b79605af8, // Your Framepack API key
+        };
+
+        // Send the request to Framepack API with video_id
+        const response = await axios.post(apiUrl, {
+            video_id: video_id,  // Pass the video_id from the request body
+        }, { headers });
+
+        // Return the response to the client
+        res.status(200).json(response.data);  // Success response
+    } catch (error) {
+        // If any error occurs, log it and return the error message
+        console.error("Error generating video:", error.message);
+        res.status(500).json({ error: "Error generating video", message: error.message });
     }
-
-    const apiUrl = 'https://api.framepack.ai/v1/generate';
-    const headers = {
-      Authorization: 'Bearer 43b8871e-0f24-4b8c-8794-b05c7d74a074:62587f324a4d45c98075b9b9875af8f8', // replace with your real API key
-    };
-
-    const response = await axios.post(apiUrl, { video_id }, { headers });
-
-    res.status(200).json(response.data);
-
-  } catch (error) {
-    console.error('Error generating video:', error.message);
-    res.status(500).json({ error: 'Error generating video', message: error.message });
-  }
-}
-
-// Route
-app.post('/api/generateVideo', generateVideo);
-
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+};
