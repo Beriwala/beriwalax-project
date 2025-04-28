@@ -1,26 +1,31 @@
 const axios = require('axios');
 
-// Export the function properly so that Vercel knows how to handle it
+// Export the function properly
 module.exports = async function generateVideo(req, res) {
-    try {
-        // Framepack API URL
-        const apiUrl = 'https://api.framepack.ai/v1/generate';
+  try {
+    const { video_id } = req.body;
 
-        // API Request headers with your API key
-        const headers = {
-            Authorization: Bearer 43b8871e-8fd2-48bc-8794-50b9c5c7c7d7:a6285f7804a0a0b5e609c75b79605af8, // Your Framepack API key
-        };
-
-        // Send the request to Framepack API
-        const response = await axios.post(apiUrl, {
-            video_id: 'your_video_id',  // Replace this with your actual video ID
-        }, { headers });
-
-        // Return the response to the client
-        res.status(200).json(response.data);  // Success response
-    } catch (error) {
-        // If any error occurs, log it and return the error message
-        console.error("Error generating video:", error.message);
-        res.status(500).json({ error: "Error generating video", message: error.message });
+    // Check if video_id is provided
+    if (!video_id) {
+      return res.status(400).json({ error: 'Missing video_id in request body' });
     }
+
+    // Framepack API endpoint
+    const apiUrl = 'https://api.framepack.ai/v1/generate';
+
+    // API Request headers with your API key
+    const headers = {
+      Authorization: 'Bearer 43b8871e-0f24-4b8c-8794-b05c7d74a074:62587f324a4d45c98075b9b9875af8f8', // Replace with your actual API key
+    };
+
+    // Send the request to Framepack API
+    const response = await axios.post(apiUrl, { video_id }, { headers });
+
+    // Return the successful response to the client
+    res.status(200).json(response.data);
+
+  } catch (error) {
+    console.error('Error generating video:', error.message);
+    res.status(500).json({ error: 'Error generating video', message: error.message });
+  }
 };
