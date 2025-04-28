@@ -1,36 +1,23 @@
-const express = require('express');
 const axios = require('axios');
-const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(express.json());
+// Async function to handle Framepack API request
+async function generateVideo() {
+    try {
+        const response = await axios.post('https://api.framepack.ai/v1/generate', {
+            headers: {
+                Authorization: 'Bearer 43b8871e-8fd2-48bc-8794-50b9c5c7c7d7:a6285f7804a0a0b5e609c75b79605af8',  // Framepack API key
+            },
+            video_id: 'your_video_id',  // Replace with actual video ID or parameters
+            // Add any other necessary parameters required by Framepack API
+        });
 
-// Home Route
-app.get('/', (req, res) => {
-  res.send('BeriwalaX Server is Running!');
-});
+        // Log the response data or use it in your app
+        console.log("Video generation response:", response.data);
+    } catch (error) {
+        // Catch and log any errors
+        console.error("Error generating video:", error.message);
+    }
+}
 
-// Generate Route
-app.post('/generate', async (req, res) => {
-  try {
-    const { prompt } = req.body;
-    const response = await axios.post('https://fal.run/fal-ai/framepack/api', 
-      { prompt: prompt },
-      {
-        headers: {
-          Authorization: Bearer ${process.env.FRAMEPACK_API_KEY},
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Start Server
-app.listen(PORT, () => {
-  console.log(Server running on port ${PORT});
-});
+// Call the function to generate video
+generateVideo();
