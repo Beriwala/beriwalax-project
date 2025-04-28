@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeriwalaX Video Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; }
+        .container { width: 100%; max-width: 500px; margin: auto; padding: 20px; background: white; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        h1 { text-align: center; }
+        textarea { width: 100%; height: 150px; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { background-color: #4CAF50; color: white; padding: 15px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+        button:hover { background-color: #45a049; }
+        .response { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BeriwalaX Video Generator</h1>
+        <form id="generateForm">
+            <textarea id="prompt" placeholder="Enter your prompt here..."></textarea>
+            <button type="submit">Generate Video</button>
+        </form>
+
+        <div class="response" id="response"></div>
+    </div>
+
+    <script>
+        document.getElementById('generateForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const prompt = document.getElementById('prompt').value;
+
+            if (!prompt) {
+                alert("Please enter a prompt!");
+                return;
+            }
+
+            document.getElementById('response').innerHTML = "Generating video... please wait.";
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('response').innerHTML = Video Generated! <a href="${data.videoUrl}" target="_blank">Click here to view your video</a>;
+                } else {
+                    document.getElementById('response').innerHTML = Error: ${data.error};
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = Error: ${error.message};
+            }
+        });
+    </script>
+</body>
+</html>
