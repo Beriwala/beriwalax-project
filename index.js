@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-// Async function to handle Framepack API request
-async function generateVideo() {
+// Function to handle the API request
+async function generateVideo(req, res) {
     try {
         const response = await axios.post('https://api.framepack.ai/v1/generate', {
             headers: {
@@ -11,13 +11,14 @@ async function generateVideo() {
             // Add any other necessary parameters required by Framepack API
         });
 
-        // Log the response data or use it in your app
-        console.log("Video generation response:", response.data);
+        // Return response to Vercel function
+        res.status(200).json(response.data);
     } catch (error) {
-        // Catch and log any errors
+        // Log the error and return it as a response
         console.error("Error generating video:", error.message);
+        res.status(500).json({ error: "Error generating video", message: error.message });
     }
 }
 
-// Call the function to generate video
-generateVideo();
+// Export the handler function for Vercel
+module.exports = generateVideo;
